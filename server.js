@@ -56,16 +56,26 @@ async function initDatabase() {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
+                fullname VARCHAR(100),
+                role VARCHAR(20) DEFAULT 'admin',
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        const adminCount = await pool.query('SELECT COUNT(*) FROM admins');
-        if (parseInt(adminCount.rows[0].count) === 0) {
-            const defaultUser = process.env.ADMIN_USERNAME || 'admin';
-            const defaultPass = process.env.ADMIN_PASSWORD || 'admin1234';
-            await pool.query('INSERT INTO admins (username, password) VALUES ($1, $2) ON CONFLICT DO NOTHING', [defaultUser, defaultPass]);
-            console.log(`🔐 สร้างบัญชีแอดมินเริ่มต้น (Username: ${defaultUser}) เรียบร้อย`);
+
+        // เพิ่มบัญชีแอดมินทั้ง 3 คนลงในฐานข้อมูล
+        const defaultAdmins = [
+            { username: 'Plab', password: '2004', fullname: 'Admin Plab' },
+            { username: 'Apec', password: '1911', fullname: 'Admin Apec' },
+            { username: 'Seen', password: '1402', fullname: 'Admin Seen' }
+        ];
+
+        for (const adm of defaultAdmins) {
+            await pool.query(
+                'INSERT INTO admins (username, password, fullname) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING',
+                [adm.username, adm.password, adm.fullname]
+            );
         }
+        console.log('🔐 ตรวจสอบและตั้งค่าบัญชีแอดมินทั้ง 3 คน (Plab, Apec, Seen) เรียบร้อย');
 
         // ตรวจสอบว่ามีข้อมูลหรือยัง ถ้ายังไม่มีให้ใส่ข้อมูลเริ่มต้นให้อัตโนมัติ
         const countRes = await pool.query('SELECT COUNT(*) FROM places');
@@ -324,16 +334,21 @@ app.post('/api/admin/login', async (req, res) => {
             console.warn('DB check error, checking fallback:', dbErr.message);
         }
 
-        // 2. Fallback ตรวจสอบกับค่าใน .env (เผื่อกรณีฉุกเฉิน)
-        const envUser = process.env.ADMIN_USERNAME || 'admin';
-        const envPass = process.env.ADMIN_PASSWORD || 'admin1234';
-        if (username === envUser && password === envPass) {
+        // 2. Fallback ตรวจสอบกับแอดมินทั้ง 3 คน (เผื่อกรณีฉุกเฉินหรือ DB อยู่ระหว่างเริ่มต้น)
+        const fallbackAdmins = {
+            'plab': { pass: '2004', name: 'Admin Plab' },
+            'apec': { pass: '1911', name: 'Admin Apec' },
+            'seen': { pass: '1402', name: 'Admin Seen' }
+        };
+
+        const lowerUser = username.toLowerCase();
+        if (fallbackAdmins[lowerUser] && fallbackAdmins[lowerUser].pass === password) {
             const token = 'adm_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
             return res.json({
                 success: true,
-                message: 'เข้าสู่ระบบสำเร็จ (Master Admin)',
+                message: 'เข้าสู่ระบบสำเร็จ',
                 token,
-                user: { id: 0, username: envUser, fullname: 'ผู้ดูแลระบบหลัก', role: 'superadmin' }
+                user: { id: 0, username: username, fullname: fallbackAdmins[lowerUser].name, role: 'admin' }
             });
         }
 
