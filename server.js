@@ -8,21 +8,27 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
-app.use(cors({
-    origin: allowedOrigin
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); // ให้เข้าถึงไฟล์หน้าเว็บผ่าน http://localhost:5000 ได้ด้วย
 
-// การตั้งค่าเชื่อมต่อ PostgreSQL
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT),
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-});
+// การตั้งค่าเชื่อมต่อ PostgreSQL (รองรับทั้ง localhost และ Cloud / Render)
+const isProduction = process.env.NODE_ENV === 'production' || !!process.env.DATABASE_URL;
+const pool = new Pool(
+    process.env.DATABASE_URL
+        ? {
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false }
+        }
+        : {
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT) || 5432,
+            database: process.env.DB_NAME || 'postgres',
+            user: process.env.DB_USER || 'postgres',
+            password: process.env.DB_PASSWORD,
+            ssl: isProduction && process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false
+        }
+);
 
 // ฟังก์ชันเริ่มต้นสร้างตารางอัตโนมัติ (ถ้ายังไม่มีใน Database)
 async function initDatabase() {
