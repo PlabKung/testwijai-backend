@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "testwijai"
+  },
+  "targets": {
+    "testwijai": {
+      "hosting": {
+        "main": [
+          "testwijai"
+        ],
+        "admin": [
+          "testwijai-admin"
+        ]
+      }
+    }
+  }
+}

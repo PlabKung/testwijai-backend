@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบผู้ดูแลระบบ (Admin Login) - Khon Kaen Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../index/style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #FAF8F5 0%, #EBD8D0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem 2rem;
+            box-shadow: 0 15px 35px rgba(186, 93, 62, 0.12), 0 5px 15px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            width: 65px;
+            height: 65px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .login-header h1 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-weight: 700;
+        }
+
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .input-box {
+            position: relative;
+        }
+
+        .input-box i.input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px 42px 12px 42px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+            background: #FAFAFA;
+        }
+
+        .input-box input:focus {
+            background: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(186, 93, 62, 0.15);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-color);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(186, 93, 62, 0.3);
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(186, 93, 62, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-banner {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.88rem;
+            margin-bottom: 1.25rem;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .default-hint {
+            background: #FEF3C7;
+            border: 1px solid #FCD34D;
+            color: #92400E;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-home a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-home a:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h1>ระบบหลังบ้านแอดมิน</h1>
+                <p>Khon Kaen Explorer Administration</p>
+            </div>
+
+            <div id="login-error" class="error-banner">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="error-text">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</span>
+            </div>
+
+            <form id="admin-login-form">
+                <div class="input-group">
+                    <label for="username">ชื่อผู้ใช้ (Username)</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้..." required
+                            autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">รหัสผ่าน (Password)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="password" placeholder="กรอกรหัสผ่าน..." required
+                            autocomplete="current-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility()"
+                            title="แสดง/ซ่อนรหัสผ่าน">
+                            <i class="fa-regular fa-eye" id="toggle-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="login-btn">
+                    <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบแอดมิน
+                </button>
+            </form>
+
+            <div class="default-hint">
+                <i class="fa-solid fa-users-gear"></i> <strong>ระบบรองรับแอดมิน</strong><br>
+                <div style="margin-top: 6px; text-align: left; display: inline-block; font-size: 0.85rem;">
+                    • <strong>AdminPlab</strong>
+                    • <strong>AdminApec</strong>
+                    • <strong>AdminSeen</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-home">
+            <a href="../index/index.html">
+                <i class="fa-solid fa-arrow-left"></i> กลับสู่หน้าเว็บไซต์หลัก
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        // ตรวจสอบว่าถ้าล็อกอินอยู่แล้ว ให้ข้ามไปหน้าจัดการได้ทันที
+        if (sessionStorage.getItem('admin_token')) {
+            window.location.replace('index.html');
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('password');
+            const icon = document.getElementById('toggle-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                passInput.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        }
+
+        document.getElementById('admin-login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const btn = document.getElementById('login-btn');
+            const errBox = document.getElementById('login-error');
+            const errText = document.getElementById('error-text');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบ...';
+            errBox.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // บันทึก Token และข้อมูลผู้ใช้ลง sessionStorage
+                    sessionStorage.setItem('admin_token', data.token);
+                    sessionStorage.setItem('admin_user', data.user.fullname || data.user.username);
+                    sessionStorage.setItem('admin_username', data.user.username);
+                    sessionStorage.setItem('admin_id', data.user.id || '');
+                    // เปลี่ยนหน้าไปยังแดชบอร์ดแอดมิน
+                    window.location.replace('index.html');
+                } else {
+                    errText.textContent = data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+                    errBox.style.display = 'flex';
+                }
+            } catch (err) {
+                errText.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบว่าเปิด node server.js หรือไม่';
+                errBox.style.display = 'flex';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบแอดมิน';
+            }
+        });
+    </script>
+</body>
+
+</html>

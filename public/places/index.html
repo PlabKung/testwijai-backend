@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สถานที่ท่องเที่ยวขอนแก่น - Khon Kaen Explorer</title>
+    <meta name="description" content="รวมสถานที่ท่องเที่ยวยอดนิยมในขอนแก่น วัด ธรรมชาติ ตลาด คาเฟ่ และอีกมากมาย">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <script src="../data.js"></script>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <div class="logo-text">
+                <span class="brand">Khon Kaen Explorer</span>
+                <span class="tagline">เที่ยวขอนแก่น...ให้เป็นมากกว่าการเดินทาง</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="../index/index.html">หน้าแรก</a>
+            <a href="../tripplaner/index.html">จัดแผนอัตโนมัติ</a>
+            <a href="../customplan/index.html">จัดทริปด้วยตัวเอง</a>
+            <a href="index.html" class="active">สถานที่ท่องเที่ยว</a>
+            <a href="../about/index.html">เกี่ยวกับเรา</a>
+        </div>
+        <div class="nav-actions">
+        </div>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="เปิดเมนู">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </nav>
+
+    <section class="page-hero">
+        <div class="page-hero-overlay"></div>
+        <div class="page-hero-content fade-up">
+            <p class="page-hero-sub">ขอนแก่น &bull; ประเทศไทย</p>
+            <h1>สถานที่ท่องเที่ยว</h1>
+            <p class="page-hero-desc">ค้นพบสถานที่สวยงามทุกประเภทในขอนแก่น ไม่ว่าจะสายธรรมชาติ วัฒนธรรม อาหาร หรือสายชิล</p>
+            <div class="places-search-wrap">
+                <div class="places-search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="ค้นหาสถานที่...">
+                    <button class="clear-btn" id="clearSearch" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="filter-bar fade-up" style="transition-delay:0.1s">
+        <div class="filter-inner">
+            <button class="filter-btn active" data-cat="ทั้งหมด"><i class="fa-solid fa-table-cells-large"></i> ทั้งหมด</button>
+            <button class="filter-btn" data-cat="วัด/สถานที่ศักดิ์สิทธิ์"><i class="fa-solid fa-vihara"></i> วัด / ศักดิ์สิทธิ์</button>
+            <button class="filter-btn" data-cat="ธรรมชาติ"><i class="fa-solid fa-tree"></i> ธรรมชาติ</button>
+            <button class="filter-btn" data-cat="ตลาด/ช้อปปิ้ง"><i class="fa-solid fa-bag-shopping"></i> ตลาด / ช้อปปิ้ง</button>
+            <button class="filter-btn" data-cat="คาเฟ่/ถ่ายรูป"><i class="fa-solid fa-mug-hot"></i> คาเฟ่ / ถ่ายรูป</button>
+            <button class="filter-btn" data-cat="พิพิธภัณฑ์"><i class="fa-solid fa-landmark"></i> พิพิธภัณฑ์</button>
+            <button class="filter-btn" data-cat="ร้านอาหาร"><i class="fa-solid fa-utensils"></i> ร้านอาหาร</button>
+            <button class="filter-btn" data-cat="ธรรมชาติ/สวนสัตว์"><i class="fa-solid fa-paw"></i> สวนสัตว์</button>
+        </div>
+    </div>
+
+    <div class="results-bar">
+        <span id="resultCount" class="result-count"></span>
+        <div class="sort-wrap">
+            <label>เรียงตาม</label>
+            <select id="sortSelect">
+                <option value="rating">คะแนนสูงสุด</option>
+                <option value="reviews">รีวิวมากสุด</option>
+                <option value="name">ชื่อ A-Z</option>
+            </select>
+        </div>
+    </div>
+
+    <main class="places-main">
+        <div class="places-grid" id="placesGrid"></div>
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <h3>ไม่พบสถานที่ที่ค้นหา</h3>
+            <p>ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Khon Kaen Explorer. All Rights Reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="../scroll-animate.js"></script>
+    <script src="../mobile-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดทริปด้วยตัวเอง - Khon Kaen Trip Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../index/style.css"> <!-- Base styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <script src="../data.js"></script>
+
+    <nav class="navbar" style="position: relative;">
+        <div class="logo">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <div class="logo-text">
+                <span class="brand">Khon Kaen Explorer</span>
+                <span class="tagline">เที่ยวขอนแก่น...ให้เป็นมากกว่าการเดินทาง</span>
+            </div>
+        </div>
+        <div class="nav-links" style="position: absolute; left: 50%; transform: translateX(-50%);">
+            <a href="../index/index.html">หน้าแรก</a>
+            <a href="../tripplaner/index.html">จัดแผนอัตโนมัติ</a>
+            <a href="#" class="active">จัดทริปด้วยตัวเอง</a>
+            <a href="../places/index.html">สถานที่ท่องเที่ยว</a>
+            <a href="../about/index.html">เกี่ยวกับเรา</a>
+        </div>
+        <div class="nav-actions">
+        </div>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="เปิดเมนู">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </nav>
+
+    <!-- Mobile View Switcher Tabs -->
+    <div class="mobile-view-tabs" id="mobileViewTabs">
+        <button type="button" class="mobile-tab-btn active" id="tabBtnPlan" onclick="switchCustomMobileView('plan')">
+            <i class="fa-solid fa-list-check"></i> แผนการเดินทาง
+        </button>
+        <button type="button" class="mobile-tab-btn" id="tabBtnMap" onclick="switchCustomMobileView('map')">
+            <i class="fa-solid fa-map"></i> แผนที่
+        </button>
+    </div>
+
+    <div class="planner-container view-plan">
+        <!-- Sidebar Form -->
+        <div class="planner-sidebar fade-left" id="sidebar-form">
+            <h2><i class="fa-solid fa-pen-to-square"></i> จัดทริปด้วยตัวเอง</h2>
+            <div class="trip-settings">
+                <div class="form-group">
+                    <label>เวลาเริ่มเที่ยว</label>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <select id="start-hour" style="flex: 1; padding: 0.5rem;"></select>
+                        <span>:</span>
+                        <select id="start-minute" style="flex: 1; padding: 0.5rem;">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <span>น.</span>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="start-time" value="09:00">
+
+                <div class="form-group" style="position: relative;">
+                    <label>จุดเริ่มต้นการเดินทาง</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="start-location" placeholder="ค้นหาสถานที่ หรือระบุตำแหน่ง" autocomplete="off" style="flex: 1; min-width: 0;">
+                        <button type="button" class="location-btn" onclick="useCurrentLocation()"><i class="fa-solid fa-location-crosshairs"></i> ตำแหน่งปัจจุบัน</button>
+                    </div>
+                    <div id="autocomplete-list" class="autocomplete-items"></div>
+                </div>
+
+                <div class="form-group" style="position: relative;">
+                    <label>จุดสิ้นสุดการเดินทาง (ไม่บังคับ)</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="end-location" placeholder="ระบุหากต้องการจุดจบเฉพาะ" autocomplete="off" style="flex: 1; min-width: 0;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="location-btn" onclick="useStartLocationAsEnd()" style="background-color: #DBEAFE; color: #1E3A8A; border-color: #BFDBFE;" title="กลับไปจบที่จุดเริ่มต้น"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="button" class="location-btn" onclick="clearEndLocation()" style="background-color: #F3F4F6; color: #4B5563; border-color: #E5E7EB;" title="ล้างค่า"><i class="fa-solid fa-eraser"></i></button>
+                        </div>
+                    </div>
+                    <div id="end-autocomplete-list" class="autocomplete-items"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>วิธีการเดินทาง</label>
+                    <select id="transport-mode">
+                        <option value="car">รถยนต์ส่วนตัว</option>
+                        <option value="motorcycle">มอเตอร์ไซค์</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #E5E7EB;">
+
+            <div class="result-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin-bottom: 0;"><i class="fa-solid fa-route"></i> เส้นทางของคุณ</h3>
+                <button class="btn btn-outline" onclick="openAddPlaceModal()" style="padding: 0.3rem 0.6rem; font-size: 0.9rem;"><i class="fa-solid fa-plus"></i> เพิ่มสถานที่</button>
+            </div>
+
+            <div class="itinerary-list" id="itinerary-list">
+                <!-- Places will be added here -->
+                <div id="empty-state" style="text-align: center; color: #6B7280; padding: 2rem 0; font-size: 0.95rem;">
+                    ยังไม่มีสถานที่ในแผน<br>คลิก "เพิ่มสถานที่" เพื่อเริ่มจัดทริป
+                </div>
+            </div>
+
+            <div class="trip-summary" style="margin-top: 1.5rem; display: none;" id="trip-summary">
+                <div class="summary-item" style="flex-direction: column; text-align: center; border-right: 1px solid var(--border-color); flex: 1; justify-content: center; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--primary-color);">เวลารวม (เดินทาง+แวะ)</span>
+                    <span id="summary-time" style="font-size: 1.1rem; color: #EF4444;">--</span>
+                </div>
+                <div class="summary-item" style="flex-direction: column; text-align: center; flex: 1; justify-content: center; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--primary-color);">ระยะทางรวม</span>
+                    <span id="summary-distance" style="font-size: 1.1rem; color: #1E3A8A;">--</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="calculate-btn" onclick="calculateCustomRoute()" style="width: 100%; margin-top: 1rem; justify-content: center;"><i class="fa-solid fa-calculator"></i> คำนวณเส้นทางและเวลา</button>
+        </div>
+
+        <!-- Map Area (Center) -->
+        <div class="map-area">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Add Place Modal -->
+    <div id="addPlaceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddPlaceModal()">&times;</span>
+            <div class="modal-header-responsive">
+                <h2>เลือกสถานที่เพื่อเพิ่ม</h2>
+                <div class="search-box">
+                    <input type="text" id="modal-search" placeholder="ค้นหาสถานที่..." style="width: 100%; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                </div>
+            </div>
+            <div class="add-place-list" id="available-places">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    
+    <!-- Sortable JS for drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="script.js"></script>
+    <script src="../scroll-animate.js"></script>
+    <script src="../mobile-nav.js"></script>
+</body>
+</html>

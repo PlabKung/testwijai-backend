@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการสถานที่ (Admin) - Khon Kaen Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../index/style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // ป้องกันผู้ที่ยังไม่ได้เข้าสู่ระบบ เข้าถึงหน้าแดชบอร์ด
+        if (!sessionStorage.getItem('admin_token')) {
+            window.location.replace('login.html');
+        }
+    </script>
+</head>
+<body>
+    <!-- Dedicated Admin Navbar -->
+    <nav class="navbar admin-navbar">
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i> Khon Kaen Explorer Admin
+        </div>
+        <div class="admin-nav-actions">
+            <a href="../index/index.html" target="_blank" class="nav-website-btn" title="เปิดหน้าเว็บหลักในแท็บใหม่">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> ดูหน้าเว็บจริง
+            </a>
+            <div class="admin-user-pill">
+                <i class="fa-solid fa-circle-user"></i>
+                <span id="current-admin-user">admin</span>
+            </div>
+            <button onclick="logoutAdmin()" class="btn-logout" title="ออกจากระบบ">
+                <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+            </button>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <!-- Status Banner -->
+        <div id="db-status-bar" class="db-status-banner checking">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span id="db-status-text">กำลังตรวจสอบการเชื่อมต่อ Node.js & PostgreSQL...</span>
+        </div>
+
+        <div class="admin-header">
+            <div>
+                <h2>ระบบจัดการสถานที่ท่องเที่ยว</h2>
+                <p class="subtitle">เพิ่ม ลบ แก้ไขข้อมูลสถานที่ท่องเที่ยว เชื่อมต่อฐานข้อมูล PostgreSQL</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fa-solid fa-plus"></i> เพิ่มสถานที่ใหม่
+            </button>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="admin-stats">
+            <div class="stat-card">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <div>
+                    <span class="stat-number" id="stat-total">0</span>
+                    <span class="stat-label">สถานที่ทั้งหมด</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-layer-group"></i>
+                <div>
+                    <span class="stat-number" id="stat-categories">0</span>
+                    <span class="stat-label">หมวดหมู่</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-star"></i>
+                <div>
+                    <span class="stat-number" id="stat-avg-rating">0.0</span>
+                    <span class="stat-label">คะแนนเฉลี่ย</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="table-controls">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="admin-search" placeholder="ค้นหาชื่อสถานที่ หรือรายละเอียด..." oninput="filterPlaces()">
+            </div>
+            <div class="filter-box">
+                <select id="admin-filter-cat" onchange="filterPlaces()">
+                    <option value="">ทุกหมวดหมู่</option>
+                    <option value="วัด/สถานที่ศักดิ์สิทธิ์">วัด/สถานที่ศักดิ์สิทธิ์</option>
+                    <option value="ธรรมชาติ">ธรรมชาติ</option>
+                    <option value="ธรรมชาติ/สวนสัตว์">ธรรมชาติ/สวนสัตว์</option>
+                    <option value="คาเฟ่/ถ่ายรูป">คาเฟ่/ถ่ายรูป</option>
+                    <option value="ตลาด/ช้อปปิ้ง">ตลาด/ช้อปปิ้ง</option>
+                    <option value="ร้านอาหาร">ร้านอาหาร</option>
+                    <option value="พิพิธภัณฑ์">พิพิธภัณฑ์</option>
+                </select>
+                <button class="btn btn-refresh" onclick="loadDataFromAPI()" title="โหลดข้อมูลใหม่">
+                    <i class="fa-solid fa-rotate-right"></i> รีเฟรช
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">รูปภาพ</th>
+                        <th>ชื่อสถานที่</th>
+                        <th>หมวดหมู่</th>
+                        <th>เวลาเปิด - ปิด</th>
+                        <th>เรทติ้ง</th>
+                        <th>พิกัด (Lat, Lng)</th>
+                        <th style="text-align: center; width: 110px;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="places-table-body">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit -->
+    <div id="placeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"><i class="fa-solid fa-location-dot"></i> เพิ่มสถานที่ใหม่</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="place-form">
+                <input type="hidden" id="place-id">
+                
+                <div class="form-group">
+                    <label><i class="fa-solid fa-tag"></i> ชื่อสถานที่ <span class="required">*</span></label>
+                    <input type="text" id="place-name" placeholder="เช่น พระมหาธาตุแก่นนคร" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-layer-group"></i> หมวดหมู่ <span class="required">*</span></label>
+                        <select id="place-category" required>
+                            <option value="วัด/สถานที่ศักดิ์สิทธิ์">วัด/สถานที่ศักดิ์สิทธิ์</option>
+                            <option value="ธรรมชาติ">ธรรมชาติ</option>
+                            <option value="ธรรมชาติ/สวนสัตว์">ธรรมชาติ/สวนสัตว์</option>
+                            <option value="คาเฟ่/ถ่ายรูป">คาเฟ่/ถ่ายรูป</option>
+                            <option value="ตลาด/ช้อปปิ้ง">ตลาด/ช้อปปิ้ง</option>
+                            <option value="ร้านอาหาร">ร้านอาหาร</option>
+                            <option value="พิพิธภัณฑ์">พิพิธภัณฑ์</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-clock"></i> เวลาเปิด - ปิด</label>
+                        <input type="text" id="place-opening-hours" placeholder="เช่น 08:00 - 18:00 น. หรือ เปิด 24 ชั่วโมง" value="08:00 - 18:00 น.">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-star" style="color: #f59e0b;"></i> เรทติ้ง (1.0 - 5.0)</label>
+                        <input type="number" step="0.1" min="1.0" max="5.0" id="place-rating" value="4.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-hourglass-half"></i> เวลาที่แนะนำให้ใช้ (นาที)</label>
+                        <input type="number" id="place-time" required value="60" min="10" step="5">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-location-crosshairs"></i> ละติจูด (Latitude) <span class="required">*</span></label>
+                        <input type="number" step="any" id="place-lat" placeholder="เช่น 16.4172" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-location-crosshairs"></i> ลองจิจูด (Longitude) <span class="required">*</span></label>
+                        <input type="number" step="any" id="place-lng" placeholder="เช่น 102.8344" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-image"></i> URL รูปภาพ <span class="required">*</span></label>
+                    <input type="url" id="place-image" placeholder="https://example.com/image.jpg" required oninput="previewImage(this.value)">
+                    <div id="image-preview-container" class="image-preview" style="display: none;">
+                        <img id="image-preview" src="" alt="ตัวอย่างรูปภาพ">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-align-left"></i> รายละเอียดสถานที่</label>
+                    <textarea id="place-desc" rows="3" placeholder="อธิบายจุดเด่น บรรยากาศ กิจกรรมที่น่าสนใจ..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" id="save-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลลงฐานข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Manage Admins -->
+    <div id="adminManageModal" class="modal">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-users-gear"></i> จัดการบัญชีผู้ดูแลระบบ (Admins)</h2>
+                <span class="close" onclick="closeAdminModal()">&times;</span>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    รายชื่อแอดมินทั้ง 3 คน (หรือเพิ่มคนใหม่) แต่ละคนสามารถเปลี่ยนรหัสผ่านของตนเองได้ที่นี่:
+                </p>
+                <div class="table-container" style="padding: 0; box-shadow: none; border: 1px solid var(--border-color); overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ชื่อเรียก</th>
+                                <th>Username</th>
+                                <th>รหัสผ่าน</th>
+                                <th style="text-align: center; width: 140px;">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-list">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Form Add New Admin -->
+            <div style="background: #FAF7F4; border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border-color);">
+                <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-main); font-weight: 600;">
+                    <i class="fa-solid fa-user-plus"></i> เพิ่มบัญชีแอดมินคนใหม่
+                </h3>
+                <form id="add-admin-form" onsubmit="handleCreateAdmin(event)" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; margin-bottom: 4px;">ชื่อเรียก</label>
+                        <input type="text" id="new-admin-fullname" placeholder="เช่น แอดมินส้ม" required style="padding: 8px 10px; font-size: 0.88rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; margin-bottom: 4px;">Username</label>
+                        <input type="text" id="new-admin-username" placeholder="เช่น admin4" required style="padding: 8px 10px; font-size: 0.88rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; margin-bottom: 4px;">Password</label>
+                        <input type="password" id="new-admin-password" placeholder="ตั้งรหัสผ่าน..." required style="padding: 8px 10px; font-size: 0.88rem;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.88rem; height: 38px;">
+                        <i class="fa-solid fa-plus"></i> เพิ่ม
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="../data.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
