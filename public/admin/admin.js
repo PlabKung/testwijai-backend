@@ -1,5 +1,7 @@
-// การตั้งค่า API URL ของ Node.js Backend
-const API_BASE_URL = 'http://localhost:5000/api';
+// การตั้งค่า API URL ของ Node.js Backend (ตรวจจับอัตโนมัติระหว่าง localhost กับเซิร์ฟเวอร์จริง)
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api'
+    : 'https://testwijai-backend.onrender.com/api';
 
 let placesData = [];
 let isServerOnline = false;

@@ -13,7 +13,7 @@ app.use(cors({
     origin: allowedOrigin
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname))); // ให้เข้าถึงไฟล์หน้าเว็บผ่าน http://localhost:5000 ได้ด้วย
+app.use(express.static(path.join(__dirname, 'public'))); // ให้เข้าถึงไฟล์หน้าเว็บผ่าน http://localhost:5000 ได้ด้วย
 
 // การตั้งค่าเชื่อมต่อ PostgreSQL
 const pool = new Pool({

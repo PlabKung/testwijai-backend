@@ -97,7 +97,10 @@ function generateId() {
 // ฟังก์ชันดึงข้อมูลล่าสุดจาก PostgreSQL (Node.js API) แบบ async
 async function loadPlaces() {
     try {
-        const response = await fetch('http://localhost:5000/api/places');
+        const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000/api/places'
+            : 'https://testwijai-backend.onrender.com/api/places';
+        const response = await fetch(apiUrl);
         if (response.ok) {
             const result = await response.json();
             if (result.data && Array.isArray(result.data) && result.data.length > 0) {
